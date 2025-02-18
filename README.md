@@ -41,7 +41,7 @@ curl -X POST -H "Content-Type: application/json" -d '{"query": "test", "limit": 
 ## Key Environment Variables
 
 - `OPENAI_API_KEY` (Optional): For LLM-dependent features
-- `SEARXNG_ENGINES`: Comma-separated list of search engines (e.g., brave,duckduckgo,wikipedia)
+- `SEARXNG_ENGINES`: Comma-separated list of search engines (e.g., google,brave,duckduckgo,wikipedia)
 - `SEARXNG_CATEGORIES`: Categories to search in (e.g., general)
 - `SEARXNG_SECRET_KEY`: Required secure key for SearXNG (generate with `openssl rand -hex 32`)
 - `PORT`: API service port (default: 3002)
