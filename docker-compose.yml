@@ -1,0 +1,116 @@
+version: "3.7"
+
+x-common-service: &common-service
+  build: ./firecrawl-searxng/apps/api
+  ulimits:
+    nofile:
+      soft: 65535
+      hard: 65535
+  networks:
+    - backend
+
+services:
+  playwright-service:
+    build: ./firecrawl-searxng/apps/playwright-service-ts
+    environment:
+      - PORT=3000
+      - BLOCK_MEDIA=true
+    networks:
+      - backend
+
+  api:
+    <<: *common-service
+    environment:
+      REDIS_URL: ${REDIS_URL}
+      REDIS_RATE_LIMIT_URL: ${REDIS_RATE_LIMIT_URL}
+      PLAYWRIGHT_MICROSERVICE_URL: ${PLAYWRIGHT_MICROSERVICE_URL}
+      SEARXNG_ENDPOINT: ${SEARXNG_ENDPOINT}
+      SEARXNG_ENGINES: ${SEARXNG_ENGINES}
+      SEARXNG_CATEGORIES: ${SEARXNG_CATEGORIES}
+      USE_DB_AUTHENTICATION: ${USE_DB_AUTHENTICATION}
+      PORT: ${PORT}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      HOST: ${HOST}
+      SEARCH_BACKEND: ${SEARCH_BACKEND}
+      FLY_PROCESS_GROUP: app
+    depends_on:
+      - valkey
+      - playwright-service
+      - searxng
+    ports:
+      - "${PORT}:${PORT}"
+    command: [ "pnpm", "run", "start:production" ]
+
+  worker:
+    <<: *common-service
+    environment:
+      REDIS_URL: ${REDIS_URL}
+      REDIS_RATE_LIMIT_URL: ${REDIS_RATE_LIMIT_URL}
+      PLAYWRIGHT_MICROSERVICE_URL: ${PLAYWRIGHT_MICROSERVICE_URL}
+      SEARXNG_ENDPOINT: ${SEARXNG_ENDPOINT}
+      SEARXNG_ENGINES: ${SEARXNG_ENGINES}
+      SEARXNG_CATEGORIES: ${SEARXNG_CATEGORIES}
+      USE_DB_AUTHENTICATION: ${USE_DB_AUTHENTICATION}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      PORT: ${PORT}
+      HOST: ${HOST}
+      SEARCH_BACKEND: ${SEARCH_BACKEND}
+      FLY_PROCESS_GROUP: worker
+    depends_on:
+      - valkey
+      - playwright-service
+      - api
+      - searxng
+    command: [ "pnpm", "run", "workers" ]
+
+  valkey:
+    image: valkey/valkey:alpine
+    networks:
+      - backend
+    volumes:
+      - firecrawl-valkey:/data
+
+  redis-searxng:
+    image: valkey/valkey:alpine
+    networks:
+      - backend
+    command: valkey-server --save 30 1 --loglevel warning
+    volumes:
+      - valkey-data2:/data
+
+  searxng:
+    container_name: searxng
+    image: searxng/searxng:latest
+    environment:
+      - SEARXNG_BASE_URL=${SEARXNG_ENDPOINT}
+      - SEARXNG_ENGINES=${SEARXNG_ENGINES}
+      - SEARXNG_CATEGORIES=${SEARXNG_CATEGORIES}
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - ./limiter.toml:/etc/searxng/limiter.toml:ro
+      - ./settings.yml:/etc/searxng/settings.yml:ro
+      - ./uwsgi.ini:/etc/searxng/uwsgi.ini:ro
+    networks:
+      - backend
+    ports:
+      - "8081:8080"
+    restart: unless-stopped
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    depends_on:
+      - redis-searxng
+
+networks:
+  backend:
+    driver: bridge
+volumes:
+  firecrawl-valkey:
+  valkey-data2:
+  caddy-data:
+  caddy-config: 
