@@ -12,6 +12,11 @@ const port = process.env.PORT || 3003;
 
 app.use(bodyParser.json());
 
+// Add health check endpoint
+app.get('/', (req: Request, res: Response) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 const BLOCK_MEDIA = (process.env.BLOCK_MEDIA || 'False').toUpperCase() === 'TRUE';
 
 const PROXY_SERVER = process.env.PROXY_SERVER || null;

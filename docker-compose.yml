@@ -10,13 +10,48 @@ x-common-service: &common-service
     - backend
 
 services:
+  proxy1:
+    image: dperson/torproxy
+    networks:
+      - backend
+    restart: unless-stopped
+
+  proxy2:
+    image: dperson/torproxy
+    networks:
+      - backend
+    restart: unless-stopped
+
+  proxy3:
+    image: dperson/torproxy
+    networks:
+      - backend
+    restart: unless-stopped
+
   playwright-service:
     build: ./firecrawl-searxng/apps/playwright-service-ts
     environment:
       - PORT=3000
       - BLOCK_MEDIA=true
+      - PROXY_SERVERS=http://proxy1:8118,http://proxy2:8118,http://proxy3:8118
     networks:
       - backend
+    depends_on:
+      - proxy1
+      - proxy2
+      - proxy3
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
 
   api:
     <<: *common-service
@@ -56,12 +91,22 @@ services:
       HOST: ${HOST}
       SEARCH_BACKEND: ${SEARCH_BACKEND}
       FLY_PROCESS_GROUP: worker
+      NODE_OPTIONS: --max-old-space-size=4096
+    deploy:
+      resources:
+        limits:
+          memory: 6G
+        reservations:
+          memory: 2G
     depends_on:
-      - valkey
-      - playwright-service
-      - api
-      - searxng
-    command: [ "pnpm", "run", "workers" ]
+      playwright-service:
+        condition: service_healthy
+      api:
+        condition: service_started
+      searxng:
+        condition: service_started
+    command: [ "node", "--max-old-space-size=4096", "dist/src/services/queue-worker.js" ]
+    restart: unless-stopped
 
   valkey:
     image: valkey/valkey:alpine
