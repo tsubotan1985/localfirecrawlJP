@@ -10,8 +10,8 @@ A self-hosted version of Firecrawl using SearXNG as the search backend, optimize
 
 ### 1. Clone Repository
 ```bash
-git clone git@github.com:Ozamatash/localfirecrawl.git
-cd localfirecrawl
+git clone https://github.com/tsubotan1985/localfirecrawlJP.git
+cd localfirecrawlJP
 ```
 
 ### 2. Environment Setup

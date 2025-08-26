@@ -10,8 +10,8 @@ SearXNGを検索バックエンドとして使用するFirecrawlのセルフホ�
 
 ### 1. リポジトリのクローン
 ```bash
-git clone git@github.com:Ozamatash/localfirecrawl.git
-cd localfirecrawl
+git clone https://github.com/tsubotan1985/localfirecrawlJP.git
+cd localfirecrawlJP
 ```
 
 ### 2. 環境変数の設定
