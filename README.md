@@ -19,7 +19,7 @@ Copy `.env.example` to `.env` and configure:
 
 ```bash
 # LMStudio API Configuration (Recommended)
-OPENAI_API_BASE=http://133.53.17.85:1234/v1
+OPENAI_API_BASE=http://localhost:1234/v1
 OPENAI_API_KEY=lm-studio
 OPENAI_MODEL_NAME=glm-4.5-air #Think model
 
@@ -129,7 +129,7 @@ curl "http://localhost:8088/search?q=%E5%9D%AA%E7%94%B0%E9%99%BD%E4%B8%80&format
 import urllib.parse
 import requests
 
-query = "坪田陽一"
+query = "researcher-name"
 encoded_query = urllib.parse.quote(query)
 response = requests.get(f"http://localhost:8088/search?q={encoded_query}&format=json")
 ```
@@ -194,9 +194,9 @@ Configuration for LLM-assisted features:
 
 ```bash
 # .env file
-OPENAI_API_BASE=http://133.53.17.85:1234/v1
+OPENAI_API_BASE=http://localhost:1234/v1
 OPENAI_API_KEY=lm-studio
-OPENAI_MODEL_NAME=glm-4-5-air(Think modelです)
+OPENAI_MODEL_NAME=your-model-name
 
 # API test
 curl -X POST "http://localhost:3100/v0/scrape" \
@@ -241,7 +241,7 @@ redis:
 ### Example 1: Researcher Deep Investigation
 ```bash
 # 1. Search researcher by name
-RESEARCHER="坪田陽一"
+RESEARCHER="researcher-name"
 ENCODED=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$RESEARCHER'))")
 curl "http://localhost:8088/search?q=$ENCODED&format=json" > search_results.json
 

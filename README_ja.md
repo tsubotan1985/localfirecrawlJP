@@ -19,7 +19,7 @@ cd localfirecrawl
 
 ```bash
 # LMStudio API設定（推奨）
-OPENAI_API_BASE=http://133.53.17.85:1234/v1
+OPENAI_API_BASE=http://localhost:1234/v1
 OPENAI_API_KEY=lm-studio
 OPENAI_MODEL_NAME=glm-4.5-air #Think modelです
 
@@ -129,7 +129,7 @@ curl "http://localhost:8088/search?q=%E5%9D%AA%E7%94%B0%E9%99%BD%E4%B8%80&format
 import urllib.parse
 import requests
 
-query = "坪田陽一"
+query = "研究者名"
 encoded_query = urllib.parse.quote(query)
 response = requests.get(f"http://localhost:8088/search?q={encoded_query}&format=json")
 ```
@@ -194,9 +194,9 @@ LLM支援機能のための設定：
 
 ```bash
 # .envファイル
-OPENAI_API_BASE=http://133.53.17.85:1234/v1
+OPENAI_API_BASE=http://localhost:1234/v1
 OPENAI_API_KEY=lm-studio
-OPENAI_MODEL_NAME=glm-4-5-air(Think modelです)
+OPENAI_MODEL_NAME=your-model-name
 
 # APIテスト
 curl -X POST "http://localhost:3100/v0/scrape" \
@@ -241,7 +241,7 @@ redis:
 ### 例1: 研究者情報の深度調査
 ```bash
 # 1. 研究者名で検索
-RESEARCHER="坪田陽一"
+RESEARCHER="研究者名"
 ENCODED=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$RESEARCHER'))")
 curl "http://localhost:8088/search?q=$ENCODED&format=json" > search_results.json
 
