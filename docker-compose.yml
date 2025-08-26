@@ -36,6 +36,8 @@ services:
       - PROXY_SERVERS=http://proxy1:8118,http://proxy2:8118,http://proxy3:8118
     networks:
       - backend
+    ports:
+      - "3111:3000"
     depends_on:
       - proxy1
       - proxy2
@@ -73,7 +75,7 @@ services:
       - playwright-service
       - searxng
     ports:
-      - "${PORT}:${PORT}"
+      - "3100:3002"
     command: [ "pnpm", "run", "start:production" ]
 
   worker:
@@ -139,7 +141,7 @@ services:
     networks:
       - backend
     ports:
-      - "8081:8080"
+      - "8088:8080"
     restart: unless-stopped
     cap_drop:
       - ALL

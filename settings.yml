@@ -5,30 +5,89 @@ server:
   # We're only using the API, so we don't need most server settings
   secret_key: "${SEARXNG_SECRET_KEY:-change_me_before_deploying}"  # Set this via SEARXNG_SECRET_KEY env var
   limiter: false
+  # プロキシヘッダー設定を追加
+  bind_address: "0.0.0.0"
+  port: 8080
+  # X-Forwarded-For ヘッダーエラーを修正
+  http_protocol_version: "1.0"
+
+# ボット検出設定を追加
+botdetection:
+  ip_limit:
+    # ボット検出を緩和
+    link_token: true
+    filter_link_local: false
+  ip_lists:
+    pass_searxng_org: false
 
 redis:
   url: redis://redis-searxng:6379/0
 
+ui:
+  # categoriesを以下のように設定
+  categories:
+    general: true
+    news: true
+    science: true
+    "social media": true
+
 search:
   formats:
     - json  # We only need JSON format for API
+    - html  # HTMLフォーマットも追加
   safe_search: 0  # Disable safe search
   autocomplete: "google"
-  default_lang: "en"
-  engines:
-    - name: google
-      shortcut: g
-      use_mobile_ui: false
-      disabled: false
-    - name: brave
-      shortcut: b
-      use_mobile_ui: false
-      disabled: false
-    - name: duckduckgo
-      shortcut: d
-      use_mobile_ui: false
-      disabled: false
-    - name: wikipedia
-      shortcut: w
-      use_mobile_ui: false
-      disabled: false
+  default_lang: "ja"  # 日本語をデフォルトに設定
+  # 言語設定を詳細に設定
+  languages:
+    - ja
+    - ja-JP
+    - en-US
+    - en
+    - auto
+  # 日本語検索の改善
+  ban_time_on_fail: 5
+  max_ban_time_on_fail: 120
+
+# enginesを以下のように設定（日本語検索対応強化）
+engines:
+  - name: google
+    engine: google
+    shortcut: go
+    categories: [general, news, science]
+    use_mobile_ui: false
+    # 日本語検索対応を明示的に設定
+    search_on_category:
+      news: news
+      general: web
+  - name: bing
+    engine: bing
+    shortcut: bi
+    categories: [general, news]
+    # Bingは日本語検索に強い
+  - name: duckduckgo
+    engine: duckduckgo
+    shortcut: dd
+    categories: [general, science]
+  - name: brave
+    engine: brave
+    shortcut: br
+    categories: [general, science]
+  - name: wikipedia
+    engine: wikipedia
+    shortcut: wp
+    categories: [general, science]
+    # 日本語Wikipedia対応
+    base_url: 'https://ja.wikipedia.org/'
+  - name: google scholar
+    engine: google_scholar
+    shortcut: gs
+    categories: [science]
+  - name: arxiv
+    engine: arxiv
+    shortcut: ar
+    categories: [science]
+  - name: github
+    engine: github
+    shortcut: gh
+    categories: [science]
